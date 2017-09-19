@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/python
 #
-# Ver:
+# See:
 # 		https://docs.python.org/3.5/library/filesys.html
 # 		https://docs.python.org/3.5/library/shutil.html
 #
@@ -16,10 +16,11 @@ class FileSamplerException(Exception):
 
 class Sampler(object):
 
-	def __init__(self, input, output, sampleSize):
+	def __init__(self, input, output, sampleSize, writeFileList=False):
 		self.input = input
 		self.output = output
 		self.sampleSize = sampleSize
+		self.writeFileList = writeFileList
 
 	def fileList(self):
 		currentPath = Path(self.input)
@@ -27,7 +28,15 @@ class Sampler(object):
 		return l
 
 	def sample(self):
-		return random.sample(self.fileList(), self.sampleSize)
+		l = self.fileList()
+		sample = random.sample(l, self.sampleSize)
+		if self.writeFileList:
+			f = open(self.output+os.sep+"sampleList.txt", 'w')
+			folder = self.input+os.sep
+			for item in sample:
+  				f.write("%s%s\n" % (folder, item))
+			f.close()
+		return sample
 
 	def validate(self):
 		try:
@@ -52,12 +61,10 @@ def main():
 	parser.add_argument("inputFolder", help="The input folder to where extract the samples")
 	parser.add_argument("outputFolder", help="The output folder to place the sampled files")
 	parser.add_argument("sampleSize", help="Size of the sample to consider", type=int)
+	parser.add_argument("--writeFileList", help="Whether to sample the files or just return a file with the list of files", type=int, nargs='?')
 	args = parser.parse_args()
-	print(args.inputFolder)
-	print(args.outputFolder)
-	print(args.sampleSize)
 
-	sampler = Sampler(args.inputFolder, args.outputFolder, args.sampleSize)
+	sampler = Sampler(args.inputFolder, args.outputFolder, args.sampleSize, args.writeFileList)
 	sampler.sample()
 
 
